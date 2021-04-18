@@ -1,8 +1,7 @@
 package com.semicolon.ds.core;
 
 import com.semicolon.ds.Constants;
-import com.semicolon.ds.comms.BSClient;
-import com.semicolon.ds.comms.ftp.DataSendingOperation;
+import com.semicolon.ds.comms.BootstrapServerClient;
 import com.semicolon.ds.comms.ftp.FTPClient;
 import com.semicolon.ds.comms.ftp.FTPServer;
 
@@ -10,14 +9,13 @@ import javafx.scene.control.TextArea;
 import java.io.IOException;
 import java.net.*;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 public class GNode {
 
     private final Logger LOG = Logger.getLogger(GNode.class.getName());
 
-    private BSClient bsClient;
+    private BootstrapServerClient bsClient;
 
     private String userName;
     private String ipAddress;
@@ -43,7 +41,7 @@ public class GNode {
         Thread t = new Thread(ftpServer);
         t.start();
 
-        this.bsClient = new BSClient();
+        this.bsClient = new BootstrapServerClient();
         this.messageBroker = new MessageBroker(ipAddress, port);
 
         this.searchManager = new SearchManager(this.messageBroker);
