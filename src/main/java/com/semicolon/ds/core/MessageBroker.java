@@ -28,9 +28,9 @@ public class MessageBroker extends Thread {
     private BlockingQueue<ChannelMessage> channelOut;
 
     private RoutingTable routingTable;
-    private PingHandler pingHandler;
-    private LeaveHandler leaveHandler;
-    private SearchQueryHandler searchQueryHandler;
+    private PingController pingHandler;
+    private LeaveController leaveHandler;
+    private SearchQueryController searchQueryHandler;
     private FileManager fileManager;
 
     private TimeoutManager timeoutManager = new TimeoutManager();
@@ -45,21 +45,21 @@ public class MessageBroker extends Thread {
 
         this.routingTable = new RoutingTable(address, port);
 
-        this.pingHandler = PingHandler.getInstance();
-        this.leaveHandler = LeaveHandler.getInstance();
+        this.pingHandler = PingController.getInstance();
+        this.leaveHandler = LeaveController.getInstance();
 
         this.fileManager = FileManager.getInstance("");
 
         this.pingHandler.init(this.routingTable, this.channelOut, this.timeoutManager);
         this.leaveHandler.init(this.routingTable, this.channelOut, this.timeoutManager);
 
-        this.searchQueryHandler = SearchQueryHandler.getInstance();
+        this.searchQueryHandler = SearchQueryController.getInstance();
         this.searchQueryHandler.init(routingTable, channelOut, timeoutManager);
 
         LOG.fine("starting server");
-        timeoutManager.registerRequest(Constants.R_PING_MESSAGE_ID, Constants.PING_INTERVAL, new TimeoutCallback() {
+        timeoutManager.registerRequest(Constants.R_PING_MESSAGE_ID, Constants.PING_INTERVAL, new CallBackWhenTimeout() {
             @Override
-            public void onTimeout(String messageId) {
+            public void whenTimeout(String messageId) {
                 sendRoutinePing();
             }
 
@@ -86,14 +86,14 @@ public class MessageBroker extends Thread {
                             + " from: " + message.getAddress()
                             + " port: " + message.getPort());
 
-                    AbstractResponseHandler abstractResponseHandler
+                    IResponseController abstractResponseHandler
                             = ResponseHandlerFactory.getResponseHandler(
                             message.getMessage().split(" ")[1],
                             this
                     );
 
                     if (abstractResponseHandler != null){
-                        abstractResponseHandler.handleResponse(message);
+                        abstractResponseHandler.manageResponse(message);
                     }
 
                 }
@@ -110,11 +110,11 @@ public class MessageBroker extends Thread {
     }
 
     public void sendPing(String address, int port) {
-        this.pingHandler.sendPing(address, port);
+        this.pingHandler.sendPingMessage(address, port);
     }
 
     public void doSearch(String keyword){
-        this.searchQueryHandler.doSearch(keyword);
+        this.searchQueryHandler.executeSearchOperation(keyword);
     }
 
     public BlockingQueue<ChannelMessage> getChannelIn() {
@@ -145,7 +145,7 @@ public class MessageBroker extends Thread {
     }
 
     public void sendLeave() {
-        this.leaveHandler.sendLeave();
+        this.leaveHandler.sendLeaveMessage();
     }
 
     public String getFiles() {
