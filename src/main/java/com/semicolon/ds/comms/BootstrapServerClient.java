@@ -15,11 +15,12 @@ public class BootstrapServerClient {
 
     private final Logger logger = Logger.getLogger(BootstrapServerClient.class.getName());
 
-    private String bsIPAddress;
-    private int bsPort;
+    private final String bsIPAddress;
+    private final int bsPort;
 
     private final DatagramSocket datagramSocket;
 
+    // TODO: Get BS ip and port from cmd args
     public BootstrapServerClient(String bsIPAddress, int bsPort) throws IOException{
 
         datagramSocket = new DatagramSocket();
@@ -31,8 +32,8 @@ public class BootstrapServerClient {
     public BootstrapServerClient() throws IOException{
         datagramSocket = new DatagramSocket();
 
-        this.bsIPAddress = "127.0.0.1";
-        this.bsPort = 55555;
+        this.bsIPAddress = Constants.BS_IP_ADDRESS;
+        this.bsPort = Constants.BS_PORT;
     }
 
     public List<InetSocketAddress> register(String userName, String ipAddress, int port) throws IOException {

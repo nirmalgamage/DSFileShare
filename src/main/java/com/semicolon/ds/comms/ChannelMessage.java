@@ -1,12 +1,12 @@
 package com.semicolon.ds.comms;
 
 public class ChannelMessage {
-    private final String address;
+    private final String ipAddress;
     private final int port;
     private final String message;
 
-    public ChannelMessage(String address, int port, String message) {
-        this.address = address;
+    public ChannelMessage(String ipAddress, int port, String message) {
+        this.ipAddress = ipAddress;
         this.port = port;
         this.message = message;
     }
@@ -19,7 +19,7 @@ public class ChannelMessage {
         return message;
     }
 
-    public String getAddress() {
-        return address;
+    public String getIpAddress() {
+        return ipAddress;
     }
 }

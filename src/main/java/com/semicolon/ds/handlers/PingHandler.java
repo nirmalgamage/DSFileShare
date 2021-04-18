@@ -49,7 +49,7 @@ public class PingHandler implements AbstractRequestHandler, AbstractResponseHand
     public void handleResponse(ChannelMessage message) {
 
         LOG.fine("Received PING : " + message.getMessage()
-                + " from: " + message.getAddress()
+                + " from: " + message.getIpAddress()
                 + " port: " + message.getPort());
 
         StringTokenizer stringToken = new StringTokenizer(message.getMessage(), " ");

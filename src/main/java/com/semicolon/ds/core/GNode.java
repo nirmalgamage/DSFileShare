@@ -15,7 +15,7 @@ public class GNode {
 
     private final Logger LOG = Logger.getLogger(GNode.class.getName());
 
-    private BootstrapServerClient bsClient;
+    private BootstrapServerClient bootstrapServerClient;
 
     private String userName;
     private String ipAddress;
@@ -41,7 +41,7 @@ public class GNode {
         Thread t = new Thread(ftpServer);
         t.start();
 
-        this.bsClient = new BootstrapServerClient();
+        this.bootstrapServerClient = new BootstrapServerClient();
         this.messageBroker = new MessageBroker(ipAddress, port);
 
         this.searchManager = new SearchManager(this.messageBroker);
@@ -65,7 +65,7 @@ public class GNode {
         List<InetSocketAddress> targets = null;
 
         try{
-            targets = this.bsClient.register(this.userName, this.ipAddress, this.port);
+            targets = this.bootstrapServerClient.register(this.userName, this.ipAddress, this.port);
 
         } catch (IOException e) {
             LOG.severe("Registering Gnode failed");
@@ -77,7 +77,7 @@ public class GNode {
 
     public void unRegister() {
         try{
-            this.bsClient.unRegister(this.userName, this.ipAddress, this.port);
+            this.bootstrapServerClient.unRegister(this.userName, this.ipAddress, this.port);
             this.messageBroker.sendLeave();
 
         } catch (IOException e) {
@@ -112,8 +112,8 @@ public class GNode {
         try {
             SearchResult fileDetail = this.searchManager.getFileDetails(fileOption);
             System.out.println("The file you requested is " + fileDetail.getFileName());
-            FTPClient ftpClient = new FTPClient(fileDetail.getAddress(), fileDetail.getTcpPort(),
-                    fileDetail.getFileName(),textArea);
+            new FTPClient(fileDetail.getAddress(), fileDetail.getTcpPort(),
+                    fileDetail.getFileName());
 
         } catch (Exception e) {
             e.printStackTrace();

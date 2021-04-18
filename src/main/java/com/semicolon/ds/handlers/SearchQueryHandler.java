@@ -78,7 +78,7 @@ public class SearchQueryHandler implements AbstractResponseHandler, AbstractRequ
     @Override
     public void handleResponse(ChannelMessage message) {
         LOG.fine("Received SER : " + message.getMessage()
-                + " from: " + message.getAddress()
+                + " from: " + message.getIpAddress()
                 + " port: " + message.getPort());
 
         StringTokenizer stringToken = new StringTokenizer(message.getMessage(), " ");
@@ -129,7 +129,7 @@ public class SearchQueryHandler implements AbstractResponseHandler, AbstractRequ
             for(Neighbour neighbour: neighbours){
 
                 //skip sending search query to the same node again
-                if (neighbour.getAddress().equals(message.getAddress())
+                if (neighbour.getAddress().equals(message.getIpAddress())
                         && neighbour.getClientPort() == message.getPort()) {
                     continue;
                 }
