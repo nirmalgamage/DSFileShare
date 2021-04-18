@@ -67,6 +67,7 @@ public class BootstrapServerClient {
         if (!Constants.REGOK.equals(status)) {
             throw new IllegalStateException(Constants.REGOK + " not received");
         }
+        logger.info("Successful - Registered to the network");
 
         int nodesCount = Integer.parseInt(stringToken.nextToken());
 
@@ -74,12 +75,12 @@ public class BootstrapServerClient {
 
         switch (nodesCount) {
             case 0:
-                logger.fine("Successful - No other nodes in the network");
+                logger.info("Successful - No other nodes in the network");
                 gNodes = new ArrayList<>();
                 break;
 
             case 1:
-                logger.fine("No of nodes found : 1");
+                logger.info("No of nodes found : 1");
 
                 gNodes = new ArrayList<>();
 
@@ -90,7 +91,7 @@ public class BootstrapServerClient {
                 break;
 
             case 2:
-                logger.fine("No of nodes found : 2");
+                logger.info("No of nodes found : 2");
 
                 gNodes = new ArrayList<>();
 
@@ -134,7 +135,7 @@ public class BootstrapServerClient {
 
         switch (code) {
             case 0:
-                logger.fine("Successfully unregistered");
+                logger.info("Successfully unregistered");
                 return true;
 
             case 9999:

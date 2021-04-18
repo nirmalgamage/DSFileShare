@@ -82,7 +82,7 @@ class DataSendingOperation implements Runnable {
             dos.write(mybytearray, 0, mybytearray.length);
             dos.flush();
             fis.close();
-            logger.fine("File " + file.getName() + " sent to client.");
+            logger.info("File " + file.getName() + " sent to client.");
         } catch (Exception e) {
             logger.severe("File does not exist!");
             e.printStackTrace();
