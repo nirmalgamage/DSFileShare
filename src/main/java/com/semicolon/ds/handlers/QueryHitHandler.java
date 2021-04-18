@@ -2,9 +2,9 @@ package com.semicolon.ds.handlers;
 
 import com.semicolon.ds.Constants;
 import com.semicolon.ds.comms.ChannelMessage;
-import com.semicolon.ds.core.RoutingTable;
-import com.semicolon.ds.core.SearchResult;
-import com.semicolon.ds.core.TimeoutManager;
+import com.semicolon.ds.core.TableOfRoutingData;
+import com.semicolon.ds.core.ResultsForSearchingQuery;
+import com.semicolon.ds.core.TimeoutHandler;
 import com.semicolon.ds.utils.StringEncoderDecoder;
 
 import java.util.*;
@@ -15,15 +15,15 @@ public class QueryHitHandler implements AbstractResponseHandler {
 
     private static final Logger LOG = Logger.getLogger(QueryHitHandler.class.getName());
 
-    private RoutingTable routingTable;
+    private TableOfRoutingData tableOfRoutingData;
 
     private BlockingQueue<ChannelMessage> channelOut;
 
-    private TimeoutManager timeoutManager;
+    private TimeoutHandler timeoutHandler;
 
     private static QueryHitHandler queryHitHandler;
 
-    private Map<String, SearchResult> searchResutls;
+    private Map<String, ResultsForSearchingQuery> searchResutls;
 
     private long searchInitiatedTime;
 
@@ -64,7 +64,7 @@ public class QueryHitHandler implements AbstractResponseHandler {
             if (this.searchResutls != null){
                 if(!this.searchResutls.containsKey(addressKey + fileName)){
                     this.searchResutls.put(addressKey + fileName,
-                            new SearchResult(fileName, address, port, hops,
+                            new ResultsForSearchingQuery(fileName, address, port, hops,
                                     (System.currentTimeMillis() - searchInitiatedTime)));
 
                 }
@@ -75,13 +75,13 @@ public class QueryHitHandler implements AbstractResponseHandler {
     }
 
     @Override
-    public void init(RoutingTable routingTable, BlockingQueue<ChannelMessage> channelOut, TimeoutManager timeoutManager) {
-        this.routingTable = routingTable;
+    public void init(TableOfRoutingData tableOfRoutingData, BlockingQueue<ChannelMessage> channelOut, TimeoutHandler timeoutHandler) {
+        this.tableOfRoutingData = tableOfRoutingData;
         this.channelOut = channelOut;
-        this.timeoutManager = timeoutManager;
+        this.timeoutHandler = timeoutHandler;
     }
 
-    public void setSearchResutls(Map<String, SearchResult> searchResutls) {
+    public void setSearchResutls(Map<String, ResultsForSearchingQuery> searchResutls) {
         this.searchResutls = searchResutls;
     }
 

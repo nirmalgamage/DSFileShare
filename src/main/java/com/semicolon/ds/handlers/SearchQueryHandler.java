@@ -2,10 +2,10 @@ package com.semicolon.ds.handlers;
 
 import com.semicolon.ds.Constants;
 import com.semicolon.ds.comms.ChannelMessage;
-import com.semicolon.ds.core.FileManager;
-import com.semicolon.ds.core.Neighbour;
-import com.semicolon.ds.core.RoutingTable;
-import com.semicolon.ds.core.TimeoutManager;
+import com.semicolon.ds.core.FileHandler;
+import com.semicolon.ds.core.NodeOfTheNeighbour;
+import com.semicolon.ds.core.TableOfRoutingData;
+import com.semicolon.ds.core.TimeoutHandler;
 import com.semicolon.ds.utils.StringEncoderDecoder;
 
 import java.util.ArrayList;
@@ -19,18 +19,18 @@ public class SearchQueryHandler implements AbstractResponseHandler, AbstractRequ
 
     private final Logger LOG = Logger.getLogger(SearchQueryHandler.class.getName());
 
-    private RoutingTable routingTable;
+    private TableOfRoutingData tableOfRoutingData;
 
     private BlockingQueue<ChannelMessage> channelOut;
 
-    private TimeoutManager timeoutManager;
+    private TimeoutHandler timeoutHandler;
 
     private static SearchQueryHandler searchQueryHandler;
 
-    private FileManager fileManager;
+    private FileHandler fileHandler;
 
     private SearchQueryHandler(){
-        fileManager = FileManager.getInstance("");
+        fileHandler = FileHandler.newFileHandler("");
     }
 
     public synchronized static SearchQueryHandler getInstance(){
@@ -43,16 +43,16 @@ public class SearchQueryHandler implements AbstractResponseHandler, AbstractRequ
     public void doSearch(String keyword) {
 
         String payload = String.format(Constants.QUERY_FORMAT,
-                this.routingTable.getAddress(),
-                this.routingTable.getPort(),
+                this.tableOfRoutingData.getAddress(),
+                this.tableOfRoutingData.getPort(),
                 StringEncoderDecoder.encode(keyword),
                 Constants.HOP_COUNT);
 
         String rawMessage = String.format(Constants.MSG_FORMAT, payload.length() + 5, payload);
 
         ChannelMessage initialMessage = new ChannelMessage(
-                this.routingTable.getAddress(),
-                this.routingTable.getPort(),
+                this.tableOfRoutingData.getAddress(),
+                this.tableOfRoutingData.getPort(),
                 rawMessage);
 
         this.handleResponse(initialMessage);
@@ -68,11 +68,11 @@ public class SearchQueryHandler implements AbstractResponseHandler, AbstractRequ
     }
 
     @Override
-    public void init(RoutingTable routingTable, BlockingQueue<ChannelMessage> channelOut,
-                     TimeoutManager timeoutManager) {
-        this.routingTable = routingTable;
+    public void init(TableOfRoutingData tableOfRoutingData, BlockingQueue<ChannelMessage> channelOut,
+                     TimeoutHandler timeoutHandler) {
+        this.tableOfRoutingData = tableOfRoutingData;
         this.channelOut = channelOut;
-        this.timeoutManager = timeoutManager;
+        this.timeoutHandler = timeoutHandler;
     }
 
     @Override
@@ -92,7 +92,7 @@ public class SearchQueryHandler implements AbstractResponseHandler, AbstractRequ
         int hops = Integer.parseInt(stringToken.nextToken().trim());
 
         //search for the file in the current node
-        Set<String> resultSet = fileManager.searchForFile(fileName);
+        Set<String> resultSet = fileHandler.searchingAFile(fileName);
         int fileNamesCount = resultSet.size();
 
         if (fileNamesCount != 0) {
@@ -107,8 +107,8 @@ public class SearchQueryHandler implements AbstractResponseHandler, AbstractRequ
 
             String payload = String.format(Constants.QUERY_HIT_FORMAT,
                     fileNamesCount,
-                    routingTable.getAddress(),
-                    routingTable.getPort(),
+                    tableOfRoutingData.getAddress(),
+                    tableOfRoutingData.getPort(),
                     Constants.HOP_COUNT- hops,
                     fileNamesString.toString());
 
@@ -124,13 +124,13 @@ public class SearchQueryHandler implements AbstractResponseHandler, AbstractRequ
         //if the hop count is greater than zero send the message to all neighbours again
 
         if (hops > 0){
-            ArrayList<Neighbour> neighbours = this.routingTable.getNeighbours();
+            ArrayList<NodeOfTheNeighbour> nodeOfTheNeighbours = this.tableOfRoutingData.getNeighbours();
 
-            for(Neighbour neighbour: neighbours){
+            for(NodeOfTheNeighbour nodeOfTheNeighbour : nodeOfTheNeighbours){
 
                 //skip sending search query to the same node again
-                if (neighbour.getAddress().equals(message.getAddress())
-                        && neighbour.getClientPort() == message.getPort()) {
+                if (nodeOfTheNeighbour.getNeighbourAddress().equals(message.getAddress())
+                        && nodeOfTheNeighbour.getNeighbourClientPort() == message.getPort()) {
                     continue;
                 }
 
@@ -142,8 +142,8 @@ public class SearchQueryHandler implements AbstractResponseHandler, AbstractRequ
 
                 String rawMessage = String.format(Constants.MSG_FORMAT, payload.length() + 5, payload);
 
-                ChannelMessage queryMessage = new ChannelMessage(neighbour.getAddress(),
-                        neighbour.getPort(),
+                ChannelMessage queryMessage = new ChannelMessage(nodeOfTheNeighbour.getNeighbourAddress(),
+                        nodeOfTheNeighbour.getPort(),
                         rawMessage);
 
                 this.sendRequest(queryMessage);

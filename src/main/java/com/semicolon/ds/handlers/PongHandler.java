@@ -2,8 +2,8 @@ package com.semicolon.ds.handlers;
 
 import com.semicolon.ds.Constants;
 import com.semicolon.ds.comms.ChannelMessage;
-import com.semicolon.ds.core.RoutingTable;
-import com.semicolon.ds.core.TimeoutManager;
+import com.semicolon.ds.core.TableOfRoutingData;
+import com.semicolon.ds.core.TimeoutHandler;
 
 import java.util.StringTokenizer;
 import java.util.concurrent.BlockingQueue;
@@ -15,10 +15,10 @@ public class PongHandler implements AbstractRequestHandler, AbstractResponseHand
 
     private BlockingQueue<ChannelMessage> channelOut;
 
-    private RoutingTable routingTable;
+    private TableOfRoutingData tableOfRoutingData;
 
     private static PongHandler pongHandler;
-    private TimeoutManager timeoutManager;
+    private TimeoutHandler timeoutHandler;
 
     private PongHandler(){
 
@@ -50,13 +50,13 @@ public class PongHandler implements AbstractRequestHandler, AbstractResponseHand
         String address = stringToken.nextToken().trim();
         int port = Integer.parseInt(stringToken.nextToken().trim());
         if(keyword.equals("BPONG")) {
-            if(routingTable.getCount() < Constants.MIN_NEIGHBOURS) {
-                this.routingTable.addNeighbour(address, port, message.getPort());
+            if(tableOfRoutingData.getNeighboursCount() < Constants.MIN_NEIGHBOURS) {
+                this.tableOfRoutingData.addNodeAsANeighbour(address, port, message.getPort());
 //                this.routingTable.print();
             }
         } else {
-            this.timeoutManager.registerResponse(String.format(Constants.PING_MESSAGE_ID_FORMAT,address,port));
-            this.routingTable.addNeighbour(address, port, message.getPort());
+            this.timeoutHandler.newResponseRegistration(String.format(Constants.PING_MESSAGE_ID_FORMAT,address,port));
+            this.tableOfRoutingData.addNodeAsANeighbour(address, port, message.getPort());
 
 //            this.routingTable.print();
         }
@@ -65,11 +65,11 @@ public class PongHandler implements AbstractRequestHandler, AbstractResponseHand
 
     @Override
     public void init(
-            RoutingTable routingTable,
+            TableOfRoutingData tableOfRoutingData,
             BlockingQueue<ChannelMessage> channelOut,
-            TimeoutManager timeoutManager) {
-        this.routingTable = routingTable;
+            TimeoutHandler timeoutHandler) {
+        this.tableOfRoutingData = tableOfRoutingData;
         this.channelOut = channelOut;
-        this.timeoutManager = timeoutManager;
+        this.timeoutHandler = timeoutHandler;
     }
 }

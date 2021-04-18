@@ -1,6 +1,6 @@
 package com.semicolon.ds.comms.ftp;
 
-import com.semicolon.ds.core.FileManager;
+import com.semicolon.ds.core.FileHandler;
 
 import java.io.*;
 import java.net.Socket;
@@ -29,7 +29,7 @@ public class DataSendingOperation implements Runnable {
             String fileName = dIn.readUTF();
 
             if (fileName != null) {
-                sendFile(FileManager.getInstance("").getFile(fileName));
+                sendFile(FileHandler.newFileHandler("").getFileFromFileName(fileName));
             }
             in.close();
         } catch (IOException e) {

@@ -2,8 +2,8 @@ package com.semicolon.ds.handlers;
 
 import com.semicolon.ds.Constants;
 import com.semicolon.ds.comms.ChannelMessage;
-import com.semicolon.ds.core.RoutingTable;
-import com.semicolon.ds.core.TimeoutManager;
+import com.semicolon.ds.core.TableOfRoutingData;
+import com.semicolon.ds.core.TimeoutHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,8 +20,8 @@ public class PingHandler implements AbstractRequestHandler, AbstractResponseHand
 
     private boolean initiated;
     private BlockingQueue<ChannelMessage> channelOut;
-    private RoutingTable routingTable;
-    private TimeoutManager timeoutManager;
+    private TableOfRoutingData tableOfRoutingData;
+    private TimeoutHandler timeoutHandler;
     private Map<String, Integer> pingFailureCount = new HashMap<String, Integer>();
     private TimeoutCallback callback = new pingTimeoutCallback();
 
@@ -63,18 +63,18 @@ public class PingHandler implements AbstractRequestHandler, AbstractResponseHand
                 int hops = Integer.parseInt(stringToken.nextToken().trim());
 
                 //if a neighbour sends a bping, pass it to the other neighbours
-                if (routingTable.isANeighbour(address, port)) {
+                if (tableOfRoutingData.checkANodeIsANeighbour(address, port)) {
                     if (hops > 0) {
                         forwardBPing(address, port, hops - 1);
                     }
                 } else {
 
                     //check if we can add another neighbour
-                    int result = this.routingTable.getCount();
+                    int result = this.tableOfRoutingData.getNeighboursCount();
                     if (result < Constants.MAX_NEIGHBOURS) {
                         //if can add, then send a bpong
                         String payload = String.format(Constants.BPONG_FORMAT,
-                                this.routingTable.getAddress(), this.routingTable.getPort());
+                                this.tableOfRoutingData.getAddress(), this.tableOfRoutingData.getPort());
 
                         String rawMessage = String.format(Constants.MSG_FORMAT, payload.length() + 5, payload);
                         ChannelMessage outGoingMsg = new ChannelMessage(address,
@@ -91,19 +91,19 @@ public class PingHandler implements AbstractRequestHandler, AbstractResponseHand
                 break;
             case "LEAVE":
                 System.out.println("receiving leave");
-                this.routingTable.removeNeighbour(address, port);
-                if (routingTable.getCount() <= Constants.MIN_NEIGHBOURS) {
+                this.tableOfRoutingData.removeNodeFromNeighbour(address, port);
+                if (tableOfRoutingData.getNeighboursCount() <= Constants.MIN_NEIGHBOURS) {
                     sendBPing(address, port);
                 }
-                this.routingTable.print();
+                this.tableOfRoutingData.showData();
 
                 break;
             default:
-                int result = this.routingTable.addNeighbour(address, port, message.getPort());
+                int result = this.tableOfRoutingData.addNodeAsANeighbour(address, port, message.getPort());
 
                 if (result != 0) {
                     String payload = String.format(Constants.PONG_FORMAT,
-                            this.routingTable.getAddress(), this.routingTable.getPort());
+                            this.tableOfRoutingData.getAddress(), this.tableOfRoutingData.getPort());
 
                     String rawMessage = String.format(Constants.MSG_FORMAT, payload.length() + 5, payload);
                     ChannelMessage outGoingMsg = new ChannelMessage(address,
@@ -118,14 +118,14 @@ public class PingHandler implements AbstractRequestHandler, AbstractResponseHand
 
     public void sendPing(String address, int port) {
         String payload = String.format(Constants.PING_FORMAT,
-                this.routingTable.getAddress(),
-                this.routingTable.getPort());
+                this.tableOfRoutingData.getAddress(),
+                this.tableOfRoutingData.getPort());
         String rawMessage = String.format(Constants.MSG_FORMAT, payload.length() + 5,payload);
         ChannelMessage message = new ChannelMessage(address, port,rawMessage);
         this.pingFailureCount.putIfAbsent(
                 String.format(Constants.PING_MESSAGE_ID_FORMAT, address, port),
                 0);
-        this.timeoutManager.registerRequest(
+        this.timeoutHandler.newRequestRegistration(
                 String.format(Constants.PING_MESSAGE_ID_FORMAT, address, port),
                 Constants.PING_TIMEOUT,
                 this.callback
@@ -135,10 +135,10 @@ public class PingHandler implements AbstractRequestHandler, AbstractResponseHand
     }
 
     private void sendBPing(String address, int port) {
-        ArrayList<String> targets = routingTable.getOtherNeighbours(address,port);
+        ArrayList<String> targets = tableOfRoutingData.otherNeighbourNodes(address,port);
         String payload = String.format(Constants.BPING_FORMAT,
-                this.routingTable.getAddress(),
-                this.routingTable.getPort(),
+                this.tableOfRoutingData.getAddress(),
+                this.tableOfRoutingData.getPort(),
                 Constants.BPING_HOP_LIMIT);
         String rawMessage = String.format(Constants.MSG_FORMAT, payload.length() + 5,payload);
         for (String target: targets) {
@@ -153,7 +153,7 @@ public class PingHandler implements AbstractRequestHandler, AbstractResponseHand
             String originAddress,
             int originPort,
             int currentHop) {
-        ArrayList<String> targets = routingTable.getOtherNeighbours(originAddress,originPort);
+        ArrayList<String> targets = tableOfRoutingData.otherNeighbourNodes(originAddress,originPort);
         String payload = String.format(Constants.BPING_FORMAT,
                 originAddress,
                 originPort,
@@ -170,12 +170,12 @@ public class PingHandler implements AbstractRequestHandler, AbstractResponseHand
 
     @Override
     public void init(
-            RoutingTable routingTable,
+            TableOfRoutingData tableOfRoutingData,
             BlockingQueue<ChannelMessage> channelOut,
-            TimeoutManager timeoutManager) {
-            this.routingTable = routingTable;
+            TimeoutHandler timeoutHandler) {
+            this.tableOfRoutingData = tableOfRoutingData;
             this.channelOut = channelOut;
-            this.timeoutManager = timeoutManager;
+            this.timeoutHandler = timeoutHandler;
 
     }
 
@@ -186,12 +186,12 @@ public class PingHandler implements AbstractRequestHandler, AbstractResponseHand
             pingFailureCount.put(messageId,pingFailureCount.get(messageId) + 1);
             if(pingFailureCount.get(messageId) >= Constants.PING_RETRY) {
                 LOG.fine("neighbour lost :( =>" + messageId);
-                routingTable.removeNeighbour(
+                tableOfRoutingData.removeNodeFromNeighbour(
                         messageId.split(":")[1],
                         Integer.valueOf(messageId.split(":")[2]));
             }
 
-            if (routingTable.getCount() < Constants.MIN_NEIGHBOURS) {
+            if (tableOfRoutingData.getNeighboursCount() < Constants.MIN_NEIGHBOURS) {
                 sendBPing(
                         messageId.split(":")[1],
                         Integer.valueOf(messageId.split(":")[2]));
