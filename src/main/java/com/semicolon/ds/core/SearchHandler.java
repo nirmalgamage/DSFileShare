@@ -41,7 +41,7 @@ class SearchHandler {
         return downloadingOptionsForFiles.size();
     }
 
-    List<String> searchUI(String keyword){
+    Map<String, ResultsForSearchingQuery> searchUI(String keyword){
 
         Map<String, ResultsForSearchingQuery> searchResults
                 = new HashMap<String, ResultsForSearchingQuery>();
@@ -79,7 +79,7 @@ class SearchHandler {
 
         this.resetTheSearchResult();
 
-        return results;
+        return searchResults;
     }
 
     private void resetTheSearchResult(){

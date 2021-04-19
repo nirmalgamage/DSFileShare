@@ -6,9 +6,13 @@ import com.semicolon.ds.comms.ftp.FTPClient;
 import com.semicolon.ds.comms.ftp.FTPServer;
 
 import javafx.scene.control.TextArea;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.net.*;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class GnutellaNode {
@@ -59,6 +63,22 @@ public class GnutellaNode {
                 gnutellaMessageHandler.sendingThePing(target.getAddress().toString().substring(1), target.getPort());
             }
         }
+
+
+        Thread thread = new Thread("New Thread") {
+            public void run() {
+                int count = 0;
+                while (true)
+                    try {
+                        this.sleep(1000);
+                        count++;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+            }
+
+        };
+        thread.start();
     }
 
     private List<InetSocketAddress> registerNewNode() {
@@ -90,7 +110,7 @@ public class GnutellaNode {
         return this.gnutellaSearchManager.seaeching(keyword);
     }
 
-    public List<String> searchKeywordInUI(String keyword) {
+    public Map<String,ResultsForSearchingQuery> searchKeywordInUI(String keyword) {
         return this.gnutellaSearchManager.searchUI(keyword);
     }
 
@@ -158,5 +178,15 @@ public class GnutellaNode {
 
     public String getFileNames() {
         return this.gnutellaMessageHandler.getFilesFromFileName();
+    }
+
+    public void getFile(String address, int tcpPort, String fileName) {
+        try {
+            FTPClient ftpClient = new FTPClient(address, tcpPort, fileName);
+            System.out.println("Waiting for file download...");
+            Thread.sleep(Constants.FILE_DOWNLOAD_TIMEOUT);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
