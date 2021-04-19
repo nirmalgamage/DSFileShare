@@ -1,6 +1,6 @@
 package com.semicolon.ds.handlers;
 
-import com.semicolon.ds.core.MessageBroker;
+import com.semicolon.ds.core.MessageHandler;
 
 import java.util.logging.Logger;
 
@@ -9,64 +9,64 @@ public class ResponseHandlerFactory {
     private static final Logger LOGGER = Logger.getLogger(ResponseHandlerFactory.class.getName());
 
     public static IResponseController getResponseHandler(String word,
-                                                         MessageBroker mBroker){
+                                                         MessageHandler messageHandler){
         switch (word){
             case "PING":
                 IResponseController pingController = PingController.getInstance();
                 pingController.init(
-                        mBroker.getRoutingTable(),
-                        mBroker.getChannelOut(),
-                        mBroker.getTimeoutManager()
+                        messageHandler.getTableOfRoutingData(),
+                        messageHandler.getBlockingQueueChannelOut(),
+                        messageHandler.getHandlerOfTimeOut()
                 );
                 return pingController;
 
             case "BPING":
                 IResponseController bPingHandler = PingController.getInstance();
                 bPingHandler.init(
-                        mBroker.getRoutingTable(),
-                        mBroker.getChannelOut(),
-                        mBroker.getTimeoutManager()
+                        messageHandler.getTableOfRoutingData(),
+                        messageHandler.getBlockingQueueChannelOut(),
+                        messageHandler.getHandlerOfTimeOut()
                 );
                 return bPingHandler;
 
             case "PONG":
                 IResponseController pongHandler = PongController.getInstance();
                 pongHandler.init(
-                        mBroker.getRoutingTable(),
-                        mBroker.getChannelOut(),
-                        mBroker.getTimeoutManager()
+                        messageHandler.getTableOfRoutingData(),
+                        messageHandler.getBlockingQueueChannelOut(),
+                        messageHandler.getHandlerOfTimeOut()
                 );
                 return pongHandler;
 
             case "BPONG":
                 IResponseController bpongHandler = PongController.getInstance();
                 bpongHandler.init(
-                        mBroker.getRoutingTable(),
-                        mBroker.getChannelOut(),
-                        mBroker.getTimeoutManager()
+                        messageHandler.getTableOfRoutingData(),
+                        messageHandler.getBlockingQueueChannelOut(),
+                        messageHandler.getHandlerOfTimeOut()
                 );
                 return bpongHandler;
 
             case "SER":
                 IResponseController searchQueryHandler = SearchQueryController.getInstance();
-                searchQueryHandler.init(mBroker.getRoutingTable(),
-                        mBroker.getChannelOut(),
-                        mBroker.getTimeoutManager());
+                searchQueryHandler.init(messageHandler.getTableOfRoutingData(),
+                        messageHandler.getBlockingQueueChannelOut(),
+                        messageHandler.getHandlerOfTimeOut());
                 return searchQueryHandler;
 
             case "SEROK":
                 IResponseController queryHitHandler = QueryHitController.getInstance();
-                queryHitHandler.init(mBroker.getRoutingTable(),
-                        mBroker.getChannelOut(),
-                        mBroker.getTimeoutManager());
+                queryHitHandler.init(messageHandler.getTableOfRoutingData(),
+                        messageHandler.getBlockingQueueChannelOut(),
+                        messageHandler.getHandlerOfTimeOut());
                 return queryHitHandler;
 
             case "LEAVE":
                 IResponseController leaveHandler = PingController.getInstance();
                 leaveHandler.init(
-                        mBroker.getRoutingTable(),
-                        mBroker.getChannelOut(),
-                        mBroker.getTimeoutManager()
+                        messageHandler.getTableOfRoutingData(),
+                        messageHandler.getBlockingQueueChannelOut(),
+                        messageHandler.getHandlerOfTimeOut()
                 );
                 return leaveHandler;
             default:

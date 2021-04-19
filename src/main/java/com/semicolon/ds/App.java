@@ -1,6 +1,6 @@
 package com.semicolon.ds;
 
-import com.semicolon.ds.core.GNode;
+import com.semicolon.ds.core.GnutellaNode;
 
 import java.util.*;
 
@@ -13,7 +13,7 @@ public class App
     public static void main(String[] args) {
         try {
             String uniqueID = UUID.randomUUID().toString();
-            GNode node = new GNode("node" + uniqueID);
+            GnutellaNode node = new GnutellaNode("node" + uniqueID);
             node.init();
 
             Scanner scanner = new Scanner(System.in);
@@ -33,7 +33,7 @@ public class App
                     String searchQuery = scanner.nextLine();
 
                     if (searchQuery != null && !searchQuery.equals("")){
-                        int results = node.doSearch(searchQuery);
+                        int results = node.searchKeyword(searchQuery);
 
                         if (results != 0){
 
@@ -50,7 +50,7 @@ public class App
                                         continue;
                                     }
 
-                                    node.getFile(option);
+                                    node.downloadFile(option);
                                     break;
 
                                 } catch (NumberFormatException e){
@@ -67,7 +67,7 @@ public class App
                     node.printRoutingTable();
 
                 } else if (commandOption.equals("3")){
-                    node.unRegister();
+                    node.unRegisterExistingNode();
                     System.exit(0);
 
                 } else {

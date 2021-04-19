@@ -1,13 +1,11 @@
 package com.semicolon.ds.gui;
 
-import com.semicolon.ds.core.GNode;
+import com.semicolon.ds.core.GnutellaNode;
 import javafx.application.Platform;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
@@ -15,7 +13,7 @@ import java.util.UUID;
 public class Controller extends Thread implements Initializable {
 
 
-    public GNode node;
+    public GnutellaNode node;
 
     public Button buttonSearch;
     public Button leaveButton;
@@ -41,7 +39,7 @@ public class Controller extends Thread implements Initializable {
         if (data.equals(null) || data.isEmpty()) {
             areaSearch.setText("select a number to download");
         } else {
-            List<String> results = node.doUISearch(data);
+            List<String> results = node.searchKeywordInUI(data);
             this.resultsCount = results.size();
 
             if (resultsCount == 0){
@@ -74,7 +72,7 @@ public class Controller extends Thread implements Initializable {
                 int intData = Integer.parseInt(data);
                 if (intData <= resultsCount){
                     this.setDownloadLog("File starting to download");
-                    node.getFile(intData, this.areaDownload);
+                    node.downloadFile(intData, this.areaDownload);
                     textDownload.setText("");
                     this.resultsCount = 0;
                 } else {
@@ -104,7 +102,7 @@ public class Controller extends Thread implements Initializable {
 
         if (alert.getResult() == ButtonType.YES) {
             Platform.exit();
-            node.unRegister();
+            node.unRegisterExistingNode();
             System.exit(0);
         }
 
@@ -143,13 +141,13 @@ public class Controller extends Thread implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         String uniqueID = UUID.randomUUID().toString();
         try {
-            node = new GNode("node" + uniqueID);
+            node = new GnutellaNode("node" + uniqueID);
         } catch (Exception e) {
             e.printStackTrace();
         }
         node.init();
 
-        this.setData(node.getIpAddress(), String.valueOf(node.getPort()));
+        this.setData(node.getGnutellaIpAddress(), String.valueOf(node.getGnutellaPort()));
         this.setRoutingTable(this.getRoutingTable());
 
         Thread thread = new Thread("New Thread") {
