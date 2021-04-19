@@ -40,7 +40,7 @@ public class PongController implements IRequestController, IResponseController {
     @Override
     public void manageResponse(ChannelMessage cMessage) {
         LOGGER.fine("PONG Received : " + cMessage.getMessage()
-                + " from: " + cMessage.getAddress()
+                + " from: " + cMessage.getIpAddress()
                 + " port: " + cMessage.getPort());
 
         StringTokenizer tokenizer = new StringTokenizer(cMessage.getMessage(), " ");

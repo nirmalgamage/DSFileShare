@@ -49,7 +49,7 @@ public class PingController implements IRequestController, IResponseController {
     public void manageResponse(ChannelMessage cMessage) {
 
         LOGGER.fine("PING Received : " + cMessage.getMessage()
-                + " from: " + cMessage.getAddress()
+                + " from: " + cMessage.getIpAddress()
                 + " port: " + cMessage.getPort());
 
         StringTokenizer stringTokenizer = new StringTokenizer(cMessage.getMessage(), " ");

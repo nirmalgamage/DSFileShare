@@ -78,7 +78,7 @@ public class SearchQueryController implements IResponseController, IRequestContr
     @Override
     public void manageResponse(ChannelMessage cMessage) {
         LOGGER.fine("SER Received: " + cMessage.getMessage()
-                + " from: " + cMessage.getAddress()
+                + " from: " + cMessage.getIpAddress()
                 + " port: " + cMessage.getPort());
 
         StringTokenizer tokenizer = new StringTokenizer(cMessage.getMessage(), " ");
@@ -129,7 +129,7 @@ public class SearchQueryController implements IResponseController, IRequestContr
             for(Neighbour neighbour: neighboursList){
 
 
-                if (neighbour.getAddress().equals(cMessage.getAddress())
+                if (neighbour.getAddress().equals(cMessage.getIpAddress())
                         && neighbour.getClientPort() == cMessage.getPort()) {
                     continue;
                 }

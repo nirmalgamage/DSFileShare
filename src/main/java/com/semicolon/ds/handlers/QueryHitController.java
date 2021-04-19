@@ -42,7 +42,7 @@ public class QueryHitController implements IResponseController {
     @Override
     public synchronized void manageResponse(ChannelMessage cMessage) {
         LOGGER.fine("SEROK Received : " + cMessage.getMessage()
-                + " from: " + cMessage.getAddress()
+                + " from: " + cMessage.getIpAddress()
                 + " port: " + cMessage.getPort());
 
         StringTokenizer tokenizer = new StringTokenizer(cMessage.getMessage(), " ");
