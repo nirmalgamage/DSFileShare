@@ -6,10 +6,10 @@ import com.semicolon.ds.core.TimeoutManager;
 
 import java.util.concurrent.BlockingQueue;
 
-interface AbstractMessageHandler {
+interface IMessageController {
     void init (
-            RoutingTable routingTable,
-            BlockingQueue<ChannelMessage> channelOut,
+            RoutingTable rTable,
+            BlockingQueue<ChannelMessage> channelOutput,
             TimeoutManager timeoutManager);
 
 }

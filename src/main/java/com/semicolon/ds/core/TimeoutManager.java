@@ -1,7 +1,7 @@
 package com.semicolon.ds.core;
 
 import com.semicolon.ds.Constants;
-import com.semicolon.ds.handlers.TimeoutCallback;
+import com.semicolon.ds.handlers.CallBackWhenTimeout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +12,7 @@ public class TimeoutManager {
     private final Logger LOG = Logger.getLogger(TimeoutManager.class.getName());
     private Map<String, TimeoutCallbackMap> requests = new HashMap<String, TimeoutCallbackMap>();
 
-    public void registerRequest(String messaageId, long timeout, TimeoutCallback callback) {
+    public void registerRequest(String messaageId, long timeout, CallBackWhenTimeout callback) {
         requests.put(messaageId, new TimeoutCallbackMap(timeout, callback));
     }
 
@@ -41,17 +41,17 @@ public class TimeoutManager {
 
     private class TimeoutCallbackMap{
         private long timeoutTime;
-        private TimeoutCallback callback;
+        private CallBackWhenTimeout callback;
         private long timeout;
 
-        private TimeoutCallbackMap(long timeout, TimeoutCallback callback) {
+        private TimeoutCallbackMap(long timeout, CallBackWhenTimeout callback) {
             this.timeout = timeout;
             this.callback = callback;
             this.timeoutTime = System.currentTimeMillis() + timeout;
         }
         private boolean checkTimeout(String messageID) {
             if (System.currentTimeMillis() >= timeoutTime) {
-                callback.onTimeout(messageID);
+                callback.whenTimeout(messageID);
                 return true;
             }
             return false;

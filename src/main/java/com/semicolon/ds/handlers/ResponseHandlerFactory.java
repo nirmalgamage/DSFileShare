@@ -6,71 +6,71 @@ import java.util.logging.Logger;
 
 public class ResponseHandlerFactory {
 
-    private static final Logger LOG = Logger.getLogger(ResponseHandlerFactory.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ResponseHandlerFactory.class.getName());
 
-    public static AbstractResponseHandler getResponseHandler(String keyword,
-                                                             MessageBroker messageBroker){
-        switch (keyword){
+    public static IResponseController getResponseHandler(String word,
+                                                         MessageBroker mBroker){
+        switch (word){
             case "PING":
-                AbstractResponseHandler pingHandler = PingHandler.getInstance();
-                pingHandler.init(
-                        messageBroker.getRoutingTable(),
-                        messageBroker.getChannelOut(),
-                        messageBroker.getTimeoutManager()
+                IResponseController pingController = PingController.getInstance();
+                pingController.init(
+                        mBroker.getRoutingTable(),
+                        mBroker.getChannelOut(),
+                        mBroker.getTimeoutManager()
                 );
-                return pingHandler;
+                return pingController;
 
             case "BPING":
-                AbstractResponseHandler bPingHandler = PingHandler.getInstance();
+                IResponseController bPingHandler = PingController.getInstance();
                 bPingHandler.init(
-                        messageBroker.getRoutingTable(),
-                        messageBroker.getChannelOut(),
-                        messageBroker.getTimeoutManager()
+                        mBroker.getRoutingTable(),
+                        mBroker.getChannelOut(),
+                        mBroker.getTimeoutManager()
                 );
                 return bPingHandler;
 
             case "PONG":
-                AbstractResponseHandler pongHandler = PongHandler.getInstance();
+                IResponseController pongHandler = PongController.getInstance();
                 pongHandler.init(
-                        messageBroker.getRoutingTable(),
-                        messageBroker.getChannelOut(),
-                        messageBroker.getTimeoutManager()
+                        mBroker.getRoutingTable(),
+                        mBroker.getChannelOut(),
+                        mBroker.getTimeoutManager()
                 );
                 return pongHandler;
 
             case "BPONG":
-                AbstractResponseHandler bpongHandler = PongHandler.getInstance();
+                IResponseController bpongHandler = PongController.getInstance();
                 bpongHandler.init(
-                        messageBroker.getRoutingTable(),
-                        messageBroker.getChannelOut(),
-                        messageBroker.getTimeoutManager()
+                        mBroker.getRoutingTable(),
+                        mBroker.getChannelOut(),
+                        mBroker.getTimeoutManager()
                 );
                 return bpongHandler;
 
             case "SER":
-                AbstractResponseHandler searchQueryHandler = SearchQueryHandler.getInstance();
-                searchQueryHandler.init(messageBroker.getRoutingTable(),
-                        messageBroker.getChannelOut(),
-                        messageBroker.getTimeoutManager());
+                IResponseController searchQueryHandler = SearchQueryController.getInstance();
+                searchQueryHandler.init(mBroker.getRoutingTable(),
+                        mBroker.getChannelOut(),
+                        mBroker.getTimeoutManager());
                 return searchQueryHandler;
 
             case "SEROK":
-                AbstractResponseHandler queryHitHandler = QueryHitHandler.getInstance();
-                queryHitHandler.init(messageBroker.getRoutingTable(),
-                        messageBroker.getChannelOut(),
-                        messageBroker.getTimeoutManager());
+                IResponseController queryHitHandler = QueryHitController.getInstance();
+                queryHitHandler.init(mBroker.getRoutingTable(),
+                        mBroker.getChannelOut(),
+                        mBroker.getTimeoutManager());
                 return queryHitHandler;
 
             case "LEAVE":
-                AbstractResponseHandler leaveHandler = PingHandler.getInstance();
+                IResponseController leaveHandler = PingController.getInstance();
                 leaveHandler.init(
-                        messageBroker.getRoutingTable(),
-                        messageBroker.getChannelOut(),
-                        messageBroker.getTimeoutManager()
+                        mBroker.getRoutingTable(),
+                        mBroker.getChannelOut(),
+                        mBroker.getTimeoutManager()
                 );
                 return leaveHandler;
             default:
-                LOG.severe("Unknown keyword received in Response Handler : " + keyword);
+                LOGGER.severe("undefined word from response controller : " + word);
                 return null;
         }
     }
