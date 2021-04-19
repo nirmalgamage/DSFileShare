@@ -1,7 +1,7 @@
 package com.semicolon.ds.core;
 
 import com.semicolon.ds.Constants;
-import com.semicolon.ds.comms.BSClient;
+import com.semicolon.ds.comms.BootstrapServerClient;
 import com.semicolon.ds.comms.ftp.FTPClient;
 import com.semicolon.ds.comms.ftp.FTPServer;
 
@@ -15,7 +15,7 @@ public class GnutellaNode {
 
     private final Logger LOG = Logger.getLogger(GnutellaNode.class.getName());
 
-    private BSClient gnutellaBSClient;
+    private BootstrapServerClient bootstrapServerClient;
 
     private String gnutellaUserName;
     private String gnutellaIpAddress;
@@ -41,7 +41,7 @@ public class GnutellaNode {
         Thread t = new Thread(gnutellaFTPServer);
         t.start();
 
-        this.gnutellaBSClient = new BSClient();
+        this.bootstrapServerClient = new BootstrapServerClient();
         this.gnutellaMessageHandler = new MessageHandler(gnutellaIpAddress, gnutellaPort);
 
         this.gnutellaSearchManager = new SearchHandler(this.gnutellaMessageHandler);
@@ -65,7 +65,7 @@ public class GnutellaNode {
         List<InetSocketAddress> targets = null;
 
         try{
-            targets = this.gnutellaBSClient.register(this.gnutellaUserName, this.gnutellaIpAddress, this.gnutellaPort);
+            targets = this.bootstrapServerClient.register(this.gnutellaUserName, this.gnutellaIpAddress, this.gnutellaPort);
 
         } catch (IOException e) {
             LOG.severe("Registering GnutellaNode failed");
@@ -77,7 +77,7 @@ public class GnutellaNode {
 
     public void unRegisterExistingNode() {
         try{
-            this.gnutellaBSClient.unRegister(this.gnutellaUserName, this.gnutellaIpAddress, this.gnutellaPort);
+            this.bootstrapServerClient.unRegister(this.gnutellaUserName, this.gnutellaIpAddress, this.gnutellaPort);
             this.gnutellaMessageHandler.sendingTheLeave();
 
         } catch (IOException e) {
@@ -113,7 +113,7 @@ public class GnutellaNode {
             ResultsForSearchingQuery fileDetail = this.gnutellaSearchManager.detailsOfTheFile(fileOption);
             System.out.println("The file you requested is " + fileDetail.getFileNameOfSearchedFile());
             FTPClient ftpClient = new FTPClient(fileDetail.getAddressOfSearchedFile(), fileDetail.getTcpPortOfSearchedFile(),
-                    fileDetail.getFileNameOfSearchedFile(),textArea);
+                    fileDetail.getFileNameOfSearchedFile());
 
         } catch (Exception e) {
             e.printStackTrace();

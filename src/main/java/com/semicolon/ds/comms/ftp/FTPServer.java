@@ -1,6 +1,6 @@
 package com.semicolon.ds.comms.ftp;
 
-import com.semicolon.ds.core.FileManager;
+import com.semicolon.ds.core.FileHandler;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -55,7 +55,7 @@ class DataSendingOperation implements Runnable {
             DataInputStream dIn = new DataInputStream(clientSocket.getInputStream());
             String fileName = dIn.readUTF();
 
-            sendFile(FileManager.getInstance("").getFile(fileName));
+            sendFile(FileHandler.newFileHandler("").getFileFromFileName(fileName));
             in.close();
         } catch (IOException e) {
             e.printStackTrace();

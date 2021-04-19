@@ -2,8 +2,8 @@ package com.semicolon.ds.handlers;
 
 import com.semicolon.ds.Constants;
 import com.semicolon.ds.comms.ChannelMessage;
-import com.semicolon.ds.core.RoutingTable;
-import com.semicolon.ds.core.TimeoutManager;
+import com.semicolon.ds.core.TableOfRoutingData;
+import com.semicolon.ds.core.TimeoutHandler;
 
 import java.util.StringTokenizer;
 import java.util.concurrent.BlockingQueue;
@@ -15,10 +15,10 @@ public class PongController implements IRequestController, IResponseController {
 
     private BlockingQueue<ChannelMessage> channelOutput;
 
-    private RoutingTable rTable;
+    private TableOfRoutingData rTable;
 
     private static PongController pongController;
-    private TimeoutManager timeoutManager;
+    private TimeoutHandler timeoutManager;
 
     private PongController(){
 
@@ -50,13 +50,13 @@ public class PongController implements IRequestController, IResponseController {
         String address = tokenizer.nextToken().trim();
         int port = Integer.parseInt(tokenizer.nextToken().trim());
         if(keyword.equals("BPONG")) {
-            if(rTable.getCount() < Constants.MIN_NEIGHBOURS) {
-                this.rTable.addNeighbour(address, port, cMessage.getPort());
+            if(rTable.getNeighboursCount() < Constants.MIN_NEIGHBOURS) {
+                this.rTable.addNodeAsANeighbour(address, port, cMessage.getPort());
 
             }
         } else {
-            this.timeoutManager.registerResponse(String.format(Constants.PING_MESSAGE_ID_FORMAT,address,port));
-            this.rTable.addNeighbour(address, port, cMessage.getPort());
+            this.timeoutManager.newResponseRegistration(String.format(Constants.PING_MESSAGE_ID_FORMAT,address,port));
+            this.rTable.addNodeAsANeighbour(address, port, cMessage.getPort());
 
 
         }
@@ -65,9 +65,9 @@ public class PongController implements IRequestController, IResponseController {
 
     @Override
     public void init(
-            RoutingTable rTable,
+            TableOfRoutingData rTable,
             BlockingQueue<ChannelMessage> channelOutput,
-            TimeoutManager timeoutManager) {
+            TimeoutHandler timeoutManager) {
         this.rTable = rTable;
         this.channelOutput = channelOutput;
         this.timeoutManager = timeoutManager;

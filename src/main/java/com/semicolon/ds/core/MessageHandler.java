@@ -28,9 +28,9 @@ public class MessageHandler extends Thread {
     private BlockingQueue<ChannelMessage> blockingQueueChannelOut;
 
     private TableOfRoutingData tableOfRoutingData;
-    private PingHandler handlerOfPing;
-    private LeaveHandler handlerOfLeave;
-    private SearchQueryHandler handlerOfSearchQuery;
+    private PingController handlerOfPing;
+    private LeaveController handlerOfLeave;
+    private SearchQueryController handlerOfSearchQuery;
     private FileHandler handlerOfFile;
 
     private TimeoutHandler handlerOfTimeOut = new TimeoutHandler();
@@ -45,21 +45,21 @@ public class MessageHandler extends Thread {
 
         this.tableOfRoutingData = new TableOfRoutingData(routingAddress, routingPort);
 
-        this.handlerOfPing = PingHandler.getInstance();
-        this.handlerOfLeave = LeaveHandler.getInstance();
+        this.handlerOfPing = PingController.getInstance();
+        this.handlerOfLeave = LeaveController.getInstance();
 
         this.handlerOfFile = FileHandler.newFileHandler("");
 
         this.handlerOfPing.init(this.tableOfRoutingData, this.blockingQueueChannelOut, this.handlerOfTimeOut);
         this.handlerOfLeave.init(this.tableOfRoutingData, this.blockingQueueChannelOut, this.handlerOfTimeOut);
 
-        this.handlerOfSearchQuery = SearchQueryHandler.getInstance();
+        this.handlerOfSearchQuery = SearchQueryController.getInstance();
         this.handlerOfSearchQuery.init(tableOfRoutingData, blockingQueueChannelOut, handlerOfTimeOut);
 
         LOG.fine("starting server");
-        handlerOfTimeOut.newRequestRegistration(Constants.R_PING_MESSAGE_ID, Constants.PING_INTERVAL, new TimeoutCallback() {
+        handlerOfTimeOut.newRequestRegistration(Constants.R_PING_MESSAGE_ID, Constants.PING_INTERVAL, new CallBackWhenTimeout() {
             @Override
-            public void onTimeout(String messageId) {
+            public void whenTimeout(String messageId) {
                 sendingTheRoutingOfPing();
             }
 
@@ -82,18 +82,18 @@ public class MessageHandler extends Thread {
             try {
                 ChannelMessage channelMessage = blockingQueueChannelIn.poll(100, TimeUnit.MILLISECONDS);
                 if (channelMessage != null) {
-                    LOG.info("Received Message: " + channelMessage.getMessage()
-                            + " from: " + channelMessage.getAddress()
-                            + " port: " + channelMessage.getPort());
+//                    LOG.info("Received Message: " + channelMessage.getMessage()
+//                            + " from: " + channelMessage.getIpAddress()
+//                            + " port: " + channelMessage.getPort());
 
-                    AbstractResponseHandler abstractResponseHandler
+                    IResponseController abstractResponseHandler
                             = ResponseHandlerFactory.getResponseHandler(
                             channelMessage.getMessage().split(" ")[1],
                             this
                     );
 
                     if (abstractResponseHandler != null){
-                        abstractResponseHandler.handleResponse(channelMessage);
+                        abstractResponseHandler.manageResponse(channelMessage);
                     }
 
                 }
@@ -110,11 +110,11 @@ public class MessageHandler extends Thread {
     }
 
     public void sendingThePing(String address, int port) {
-        this.handlerOfPing.sendPing(address, port);
+        this.handlerOfPing.sendPingMessage(address, port);
     }
 
     public void searching(String keyword){
-        this.handlerOfSearchQuery.doSearch(keyword);
+        this.handlerOfSearchQuery.executeSearchOperation(keyword);
     }
 
     public BlockingQueue<ChannelMessage> getBlockingQueueChannelIn() {
@@ -145,7 +145,7 @@ public class MessageHandler extends Thread {
     }
 
     public void sendingTheLeave() {
-        this.handlerOfLeave.sendLeave();
+        this.handlerOfLeave.sendLeaveMessage();
     }
 
     public String getFilesFromFileName() {
