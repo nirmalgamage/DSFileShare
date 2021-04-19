@@ -1,7 +1,6 @@
 package com.semicolon.ds.core;
 
 import com.semicolon.ds.Constants;
-import com.semicolon.ds.comms.ftp.DataSendingOperation;
 
 import java.io.*;
 import java.util.*;

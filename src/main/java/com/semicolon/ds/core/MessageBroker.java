@@ -83,7 +83,7 @@ public class MessageBroker extends Thread {
                 ChannelMessage message = channelIn.poll(100, TimeUnit.MILLISECONDS);
                 if (message != null) {
                     LOG.info("Received Message: " + message.getMessage()
-                            + " from: " + message.getAddress()
+                            + " from: " + message.getIpAddress()
                             + " port: " + message.getPort());
 
                     IResponseController abstractResponseHandler
