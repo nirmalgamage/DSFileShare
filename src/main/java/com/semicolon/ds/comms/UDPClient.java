@@ -10,6 +10,7 @@ public class UDPClient extends Thread {
     private final BlockingQueue<ChannelMessage> channelOut;
     private final DatagramSocket socket;
     private volatile boolean process = true;
+
     public UDPClient(BlockingQueue<ChannelMessage> channelOut, DatagramSocket socket) {
         this.channelOut = channelOut;
         this.socket = socket;
@@ -20,7 +21,7 @@ public class UDPClient extends Thread {
         while (process) {
             try {
                 ChannelMessage message = channelOut.take();
-                String address = message.getAddress();
+                String address = message.getIpAddress();
                 int port = message.getPort();
                 String payload = message.getMessage();
                 DatagramPacket packet = new DatagramPacket(

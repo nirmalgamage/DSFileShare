@@ -1,9 +1,8 @@
 package com.semicolon.ds;
 
 public class Constants {
-
-    public static final String BS_PROPERTIES = "Bootstrap.properties";
-//    public static final String LOCALHOST = "127.0.0.1";
+    public static final String BS_IP_ADDRESS = "127.0.0.1";
+    public static final int BS_PORT = 55555;
 
     public static final int FTP_PORT_OFFSET = 100;
 

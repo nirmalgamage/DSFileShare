@@ -6,22 +6,22 @@ import java.util.logging.Logger;
 
 public class ResponseHandlerFactory {
 
-    private static final Logger LOG = Logger.getLogger(ResponseHandlerFactory.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ResponseHandlerFactory.class.getName());
 
-    public static AbstractResponseHandler getResponseHandler(String keyword,
-                                                             MessageHandler messageHandler){
-        switch (keyword){
+    public static IResponseController getResponseHandler(String word,
+                                                         MessageHandler messageHandler){
+        switch (word){
             case "PING":
-                AbstractResponseHandler pingHandler = PingHandler.getInstance();
-                pingHandler.init(
+                IResponseController pingController = PingController.getInstance();
+                pingController.init(
                         messageHandler.getTableOfRoutingData(),
                         messageHandler.getBlockingQueueChannelOut(),
                         messageHandler.getHandlerOfTimeOut()
                 );
-                return pingHandler;
+                return pingController;
 
             case "BPING":
-                AbstractResponseHandler bPingHandler = PingHandler.getInstance();
+                IResponseController bPingHandler = PingController.getInstance();
                 bPingHandler.init(
                         messageHandler.getTableOfRoutingData(),
                         messageHandler.getBlockingQueueChannelOut(),
@@ -30,7 +30,7 @@ public class ResponseHandlerFactory {
                 return bPingHandler;
 
             case "PONG":
-                AbstractResponseHandler pongHandler = PongHandler.getInstance();
+                IResponseController pongHandler = PongController.getInstance();
                 pongHandler.init(
                         messageHandler.getTableOfRoutingData(),
                         messageHandler.getBlockingQueueChannelOut(),
@@ -39,7 +39,7 @@ public class ResponseHandlerFactory {
                 return pongHandler;
 
             case "BPONG":
-                AbstractResponseHandler bpongHandler = PongHandler.getInstance();
+                IResponseController bpongHandler = PongController.getInstance();
                 bpongHandler.init(
                         messageHandler.getTableOfRoutingData(),
                         messageHandler.getBlockingQueueChannelOut(),
@@ -48,21 +48,21 @@ public class ResponseHandlerFactory {
                 return bpongHandler;
 
             case "SER":
-                AbstractResponseHandler searchQueryHandler = SearchQueryHandler.getInstance();
+                IResponseController searchQueryHandler = SearchQueryController.getInstance();
                 searchQueryHandler.init(messageHandler.getTableOfRoutingData(),
                         messageHandler.getBlockingQueueChannelOut(),
                         messageHandler.getHandlerOfTimeOut());
                 return searchQueryHandler;
 
             case "SEROK":
-                AbstractResponseHandler queryHitHandler = QueryHitHandler.getInstance();
+                IResponseController queryHitHandler = QueryHitController.getInstance();
                 queryHitHandler.init(messageHandler.getTableOfRoutingData(),
                         messageHandler.getBlockingQueueChannelOut(),
                         messageHandler.getHandlerOfTimeOut());
                 return queryHitHandler;
 
             case "LEAVE":
-                AbstractResponseHandler leaveHandler = PingHandler.getInstance();
+                IResponseController leaveHandler = PingController.getInstance();
                 leaveHandler.init(
                         messageHandler.getTableOfRoutingData(),
                         messageHandler.getBlockingQueueChannelOut(),
@@ -70,7 +70,7 @@ public class ResponseHandlerFactory {
                 );
                 return leaveHandler;
             default:
-                LOG.severe("Unknown keyword received in Response Handler : " + keyword);
+                LOGGER.severe("undefined word from response controller : " + word);
                 return null;
         }
     }
