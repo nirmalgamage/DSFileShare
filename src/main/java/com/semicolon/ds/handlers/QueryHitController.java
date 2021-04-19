@@ -2,9 +2,9 @@ package com.semicolon.ds.handlers;
 
 import com.semicolon.ds.Constants;
 import com.semicolon.ds.comms.ChannelMessage;
-import com.semicolon.ds.core.RoutingTable;
-import com.semicolon.ds.core.SearchResult;
-import com.semicolon.ds.core.TimeoutManager;
+import com.semicolon.ds.core.TableOfRoutingData;
+import com.semicolon.ds.core.ResultsForSearchingQuery;
+import com.semicolon.ds.core.TimeoutHandler;
 import com.semicolon.ds.utils.StringManipulator;
 
 import java.util.*;
@@ -15,15 +15,15 @@ public class QueryHitController implements IResponseController {
 
     private static final Logger LOGGER = Logger.getLogger(QueryHitController.class.getName());
 
-    private RoutingTable rTable;
+    private TableOfRoutingData rTable;
 
     private BlockingQueue<ChannelMessage> channelOutput;
 
-    private TimeoutManager timeoutManager;
+    private TimeoutHandler timeoutManager;
 
     private static QueryHitController queryHitController;
 
-    private Map<String, SearchResult> searchResults;
+    private Map<String, ResultsForSearchingQuery> searchResults;
 
     private long searchStartedTime;
 
@@ -64,7 +64,7 @@ public class QueryHitController implements IResponseController {
             if (this.searchResults != null){
                 if(!this.searchResults.containsKey(addressKey + fileName)){
                     this.searchResults.put(addressKey + fileName,
-                            new SearchResult(fileName, address, port, hopsCount,
+                            new ResultsForSearchingQuery(fileName, address, port, hopsCount,
                                     (System.currentTimeMillis() - searchStartedTime)));
 
                 }
@@ -75,13 +75,13 @@ public class QueryHitController implements IResponseController {
     }
 
     @Override
-    public void init(RoutingTable rTable, BlockingQueue<ChannelMessage> channelOutput, TimeoutManager timeoutManager) {
+    public void init(TableOfRoutingData rTable, BlockingQueue<ChannelMessage> channelOutput, TimeoutHandler timeoutManager) {
         this.rTable = rTable;
         this.channelOutput = channelOutput;
         this.timeoutManager = timeoutManager;
     }
 
-    public void setSearchResults(Map<String, SearchResult> searchResults) {
+    public void setSearchResults(Map<String, ResultsForSearchingQuery> searchResults) {
         this.searchResults = searchResults;
     }
 

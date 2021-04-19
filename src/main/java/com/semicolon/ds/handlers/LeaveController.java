@@ -2,16 +2,16 @@ package com.semicolon.ds.handlers;
 
 import com.semicolon.ds.Constants;
 import com.semicolon.ds.comms.ChannelMessage;
-import com.semicolon.ds.core.Neighbour;
-import com.semicolon.ds.core.RoutingTable;
-import com.semicolon.ds.core.TimeoutManager;
+import com.semicolon.ds.core.NodeOfTheNeighbour;
+import com.semicolon.ds.core.TableOfRoutingData;
+import com.semicolon.ds.core.TimeoutHandler;
 
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 
 public class LeaveController implements IRequestController {
 
-    private RoutingTable rTable;
+    private TableOfRoutingData rTable;
     private BlockingQueue<ChannelMessage> channelOutput;
     private static LeaveController leaveController;
 
@@ -27,18 +27,18 @@ public class LeaveController implements IRequestController {
                 this.rTable.getAddress(),
                 this.rTable.getPort());
         String rMessage = String.format(Constants.MSG_FORMAT, msgPayload.length() + 5,msgPayload);
-        ArrayList<Neighbour> neighbours = rTable.getNeighbours();
-        for (Neighbour neighbour: neighbours) {
-            ChannelMessage channelMessage = new ChannelMessage(neighbour.getAddress(), neighbour.getPort(),rMessage);
+        ArrayList<NodeOfTheNeighbour> neighbours = rTable.getNeighbours();
+        for (NodeOfTheNeighbour neighbour: neighbours) {
+            ChannelMessage channelMessage = new ChannelMessage(neighbour.getNeighbourAddress(), neighbour.getPort(),rMessage);
             sendRequestMessage(channelMessage);
         }
 
     }
 
     @Override
-    public void init(RoutingTable rTable,
+    public void init(TableOfRoutingData rTable,
                      BlockingQueue<ChannelMessage> channelOutput,
-                     TimeoutManager timeoutManager) {
+                     TimeoutHandler timeoutManager) {
         this.rTable = rTable;
         this.channelOutput = channelOutput;
     }

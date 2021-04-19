@@ -1,8 +1,8 @@
 package com.semicolon.ds.core;
 
 import com.semicolon.ds.Constants;
-import com.semicolon.ds.utils.ConsoleTable;
-import com.semicolon.ds.handlers.QueryHitHandler;
+import com.semicolon.ds.utils.ConsoleRegister;
+import com.semicolon.ds.handlers.QueryHitController;
 
 import java.util.*;
 
@@ -21,9 +21,9 @@ class SearchHandler {
         Map<String, ResultsForSearchingQuery> searchingResults
                 = new HashMap<String, ResultsForSearchingQuery>();
 
-        QueryHitHandler queryHitHandler = QueryHitHandler.getInstance();
-        queryHitHandler.setSearchResutls(searchingResults);
-        queryHitHandler.setSearchInitiatedTime(System.currentTimeMillis());
+        QueryHitController queryHitHandler = QueryHitController.getInstance();
+        queryHitHandler.setSearchResults(searchingResults);
+        queryHitHandler.setSearchStartedTime(System.currentTimeMillis());
 
         this.messageHandler.searching(keyword);
 
@@ -46,9 +46,9 @@ class SearchHandler {
         Map<String, ResultsForSearchingQuery> searchResults
                 = new HashMap<String, ResultsForSearchingQuery>();
 
-        QueryHitHandler queryHitHandler = QueryHitHandler.getInstance();
-        queryHitHandler.setSearchResutls(searchResults);
-        queryHitHandler.setSearchInitiatedTime(System.currentTimeMillis());
+        QueryHitController queryHitHandler = QueryHitController.getInstance();
+        queryHitHandler.setSearchResults(searchResults);
+        queryHitHandler.setSearchStartedTime(System.currentTimeMillis());
 
         this.messageHandler.searching(keyword);
 
@@ -83,9 +83,9 @@ class SearchHandler {
     }
 
     private void resetTheSearchResult(){
-        QueryHitHandler queryHitHandler = QueryHitHandler.getInstance();
+        QueryHitController queryHitHandler = QueryHitController.getInstance();
 
-        queryHitHandler.setSearchResutls(null);
+        queryHitHandler.setSearchResults(null);
     }
 
     private void viewSearchResults(Map<String, ResultsForSearchingQuery> searchResults){
@@ -127,8 +127,8 @@ class SearchHandler {
             return;
         }
 
-        ConsoleTable ct = new ConsoleTable(headers,content);
-        ct.printTable();
+        ConsoleRegister ct = new ConsoleRegister(headers,content);
+        ct.generateTableLog();
 
     }
 

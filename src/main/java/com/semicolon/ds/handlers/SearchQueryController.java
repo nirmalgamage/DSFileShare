@@ -2,10 +2,10 @@ package com.semicolon.ds.handlers;
 
 import com.semicolon.ds.Constants;
 import com.semicolon.ds.comms.ChannelMessage;
-import com.semicolon.ds.core.FileManager;
-import com.semicolon.ds.core.Neighbour;
-import com.semicolon.ds.core.RoutingTable;
-import com.semicolon.ds.core.TimeoutManager;
+import com.semicolon.ds.core.FileHandler;
+import com.semicolon.ds.core.NodeOfTheNeighbour;
+import com.semicolon.ds.core.TableOfRoutingData;
+import com.semicolon.ds.core.TimeoutHandler;
 import com.semicolon.ds.utils.StringManipulator;
 
 import java.util.ArrayList;
@@ -19,18 +19,18 @@ public class SearchQueryController implements IResponseController, IRequestContr
 
     private final Logger LOGGER = Logger.getLogger(SearchQueryController.class.getName());
 
-    private RoutingTable rTable;
+    private TableOfRoutingData rTable;
 
     private BlockingQueue<ChannelMessage> channelOutput;
 
-    private TimeoutManager timeoutManager;
+    private TimeoutHandler timeoutManager;
 
     private static SearchQueryController searchQueryHandler;
 
-    private FileManager fileManager;
+    private FileHandler fileManager;
 
     private SearchQueryController(){
-        fileManager = FileManager.getInstance("");
+        fileManager = FileHandler.newFileHandler("");
     }
 
     public synchronized static SearchQueryController getInstance(){
@@ -68,8 +68,8 @@ public class SearchQueryController implements IResponseController, IRequestContr
     }
 
     @Override
-    public void init(RoutingTable rTable, BlockingQueue<ChannelMessage> channelOutput,
-                     TimeoutManager timeoutManager) {
+    public void init(TableOfRoutingData rTable, BlockingQueue<ChannelMessage> channelOutput,
+                     TimeoutHandler timeoutManager) {
         this.rTable = rTable;
         this.channelOutput = channelOutput;
         this.timeoutManager = timeoutManager;
@@ -92,7 +92,7 @@ public class SearchQueryController implements IResponseController, IRequestContr
         int hopsCount = Integer.parseInt(tokenizer.nextToken().trim());
 
 
-        Set<String> resultSet = fileManager.searchForFile(fileName);
+        Set<String> resultSet = fileManager.searchingAFile(fileName);
         int numOfFileNames = resultSet.size();
 
         if (numOfFileNames != 0) {
@@ -124,13 +124,13 @@ public class SearchQueryController implements IResponseController, IRequestContr
 
 
         if (hopsCount > 0){
-            ArrayList<Neighbour> neighboursList = this.rTable.getNeighbours();
+            ArrayList<NodeOfTheNeighbour> neighboursList = this.rTable.getNeighbours();
 
-            for(Neighbour neighbour: neighboursList){
+            for(NodeOfTheNeighbour neighbour: neighboursList){
 
 
-                if (neighbour.getAddress().equals(cMessage.getIpAddress())
-                        && neighbour.getClientPort() == cMessage.getPort()) {
+                if (neighbour.getNeighbourAddress().equals(cMessage.getIpAddress())
+                        && neighbour.getNeighbourClientPort() == cMessage.getPort()) {
                     continue;
                 }
 
@@ -142,7 +142,7 @@ public class SearchQueryController implements IResponseController, IRequestContr
 
                 String rMessage = String.format(Constants.MSG_FORMAT, msgPayload.length() + 5, msgPayload);
 
-                ChannelMessage qMessage = new ChannelMessage(neighbour.getAddress(),
+                ChannelMessage qMessage = new ChannelMessage(neighbour.getNeighbourAddress(),
                         neighbour.getPort(),
                         rMessage);
 

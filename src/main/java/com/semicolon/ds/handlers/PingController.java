@@ -2,8 +2,8 @@ package com.semicolon.ds.handlers;
 
 import com.semicolon.ds.Constants;
 import com.semicolon.ds.comms.ChannelMessage;
-import com.semicolon.ds.core.RoutingTable;
-import com.semicolon.ds.core.TimeoutManager;
+import com.semicolon.ds.core.TableOfRoutingData;
+import com.semicolon.ds.core.TimeoutHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,8 +20,8 @@ public class PingController implements IRequestController, IResponseController {
 
     private boolean started;
     private BlockingQueue<ChannelMessage> channelOutput;
-    private RoutingTable rTable;
-    private TimeoutManager timeoutManager;
+    private TableOfRoutingData rTable;
+    private TimeoutHandler timeoutManager;
     private Map<String, Integer> failCount = new HashMap<String, Integer>();
     private CallBackWhenTimeout callBackWhenTimeout = new PingToutCallBack();
 
@@ -63,14 +63,14 @@ public class PingController implements IRequestController, IResponseController {
             case "BPING":
                 int hopsCount = Integer.parseInt(stringTokenizer.nextToken().trim());
 
-                if (rTable.isANeighbour(address, port)) {
+                if (rTable.checkANodeIsANeighbour(address, port)) {
                     if (hopsCount > 0) {
                         passBPingMessage(address, port, hopsCount - 1);
                     }
                 } else {
 
 
-                    int result = this.rTable.getCount();
+                    int result = this.rTable.getNeighboursCount();
                     if (result < Constants.MAX_NEIGHBOURS) {
 
                         String msgPayload = String.format(Constants.BPONG_FORMAT,
@@ -91,15 +91,16 @@ public class PingController implements IRequestController, IResponseController {
                 break;
             case "LEAVE":
                 System.out.println("Receiving the Leaving msg");
-                this.rTable.removeNeighbour(address, port);
-                if (rTable.getCount() <= Constants.MIN_NEIGHBOURS) {
+                //TODO: Double check the called function
+                this.rTable.removeNodeFromNeighbour(address, port);
+                if (rTable.getNeighboursCount() <= Constants.MIN_NEIGHBOURS) {
                     sendBPingMessage(address, port);
                 }
-                this.rTable.print();
+                this.rTable.showData();
 
                 break;
             default:
-                int result = this.rTable.addNeighbour(address, port, cMessage.getPort());
+                int result = this.rTable.addNodeAsANeighbour(address, port, cMessage.getPort());
 
                 if (result != 0) {
                     String msgPayload = String.format(Constants.PONG_FORMAT,
@@ -125,7 +126,7 @@ public class PingController implements IRequestController, IResponseController {
         this.failCount.putIfAbsent(
                 String.format(Constants.PING_MESSAGE_ID_FORMAT, address, port),
                 0);
-        this.timeoutManager.registerRequest(
+        this.timeoutManager.newRequestRegistration(
                 String.format(Constants.PING_MESSAGE_ID_FORMAT, address, port),
                 Constants.PING_TIMEOUT,
                 this.callBackWhenTimeout
@@ -135,7 +136,7 @@ public class PingController implements IRequestController, IResponseController {
     }
 
     private void sendBPingMessage(String address, int port) {
-        ArrayList<String> targetList = rTable.getOtherNeighbours(address,port);
+        ArrayList<String> targetList = rTable.otherNeighbourNodes(address,port);
         String msgPayload = String.format(Constants.BPING_FORMAT,
                 this.rTable.getAddress(),
                 this.rTable.getPort(),
@@ -153,7 +154,7 @@ public class PingController implements IRequestController, IResponseController {
             String baseAddress,
             int basePort,
             int currHop) {
-        ArrayList<String> targetsList = rTable.getOtherNeighbours(baseAddress,basePort);
+        ArrayList<String> targetsList = rTable.otherNeighbourNodes(baseAddress,basePort);
         String msgPayload = String.format(Constants.BPING_FORMAT,
                 baseAddress,
                 basePort,
@@ -170,9 +171,9 @@ public class PingController implements IRequestController, IResponseController {
 
     @Override
     public void init(
-            RoutingTable rTable,
+            TableOfRoutingData rTable,
             BlockingQueue<ChannelMessage> channelOutput,
-            TimeoutManager timeoutManager) {
+            TimeoutHandler timeoutManager) {
             this.rTable = rTable;
             this.channelOutput = channelOutput;
             this.timeoutManager = timeoutManager;
@@ -186,12 +187,12 @@ public class PingController implements IRequestController, IResponseController {
             failCount.put(messageId, failCount.get(messageId) + 1);
             if(failCount.get(messageId) >= Constants.PING_RETRY) {
                 LOGGER.fine("Neighbour is missed :( =>" + messageId);
-                rTable.removeNeighbour(
+                rTable.removeNodeFromNeighbour(
                         messageId.split(":")[1],
                         Integer.valueOf(messageId.split(":")[2]));
             }
 
-            if (rTable.getCount() < Constants.MIN_NEIGHBOURS) {
+            if (rTable.getNeighboursCount() < Constants.MIN_NEIGHBOURS) {
                 sendBPingMessage(
                         messageId.split(":")[1],
                         Integer.valueOf(messageId.split(":")[2]));

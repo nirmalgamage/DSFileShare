@@ -6,7 +6,7 @@ import com.semicolon.ds.core.TimeoutHandler;
 
 import java.util.concurrent.BlockingQueue;
 
-interface AbstractMessageHandler {
+interface IMessageController {
     void init (
             TableOfRoutingData tableOfRoutingData,
             BlockingQueue<ChannelMessage> channelOut,
