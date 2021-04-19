@@ -40,7 +40,7 @@ public class PongHandler implements AbstractRequestHandler, AbstractResponseHand
     @Override
     public void handleResponse(ChannelMessage message) {
         LOG.fine("Received PONG : " + message.getMessage()
-                + " from: " + message.getAddress()
+                + " from: " + message.getIpAddress()
                 + " port: " + message.getPort());
 
         StringTokenizer stringToken = new StringTokenizer(message.getMessage(), " ");

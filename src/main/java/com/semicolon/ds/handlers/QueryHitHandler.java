@@ -42,7 +42,7 @@ public class QueryHitHandler implements AbstractResponseHandler {
     @Override
     public synchronized void handleResponse(ChannelMessage message) {
         LOG.fine("Received SEROK : " + message.getMessage()
-                + " from: " + message.getAddress()
+                + " from: " + message.getIpAddress()
                 + " port: " + message.getPort());
 
         StringTokenizer stringToken = new StringTokenizer(message.getMessage(), " ");

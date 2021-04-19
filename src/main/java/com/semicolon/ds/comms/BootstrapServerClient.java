@@ -11,20 +11,29 @@ import java.net.*;
 import java.util.logging.Logger;
 
 
-public class BSClient {
+public class BootstrapServerClient {
 
-    private final Logger LOG = Logger.getLogger(BSClient.class.getName());
+    private final Logger logger = Logger.getLogger(BootstrapServerClient.class.getName());
 
-    private String BS_IPAddress;
-    private int BS_Port;
+    private final String bsIPAddress;
+    private final int bsPort;
 
-    private DatagramSocket datagramSocket;
+    private final DatagramSocket datagramSocket;
 
-    public BSClient() throws IOException{
+    // TODO: Get BS ip and port from cmd args
+    public BootstrapServerClient(String bsIPAddress, int bsPort) throws IOException{
 
         datagramSocket = new DatagramSocket();
 
-        readProperties();
+        this.bsIPAddress = bsIPAddress;
+        this.bsPort = bsPort;
+    }
+
+    public BootstrapServerClient() throws IOException{
+        datagramSocket = new DatagramSocket();
+
+        this.bsIPAddress = Constants.BS_IP_ADDRESS;
+        this.bsPort = Constants.BS_PORT;
     }
 
     public List<InetSocketAddress> register(String userName, String ipAddress, int port) throws IOException {
@@ -33,7 +42,7 @@ public class BSClient {
 
         request = String.format(Constants.MSG_FORMAT, request.length() + 5, request);
 
-        return  processBSResponse(sendOrReceive(request));
+        return  processBootstrapServerRegisterResponse(sendAndReceiveUDPMessages(request));
 
     }
 
@@ -43,21 +52,22 @@ public class BSClient {
 
         request = String.format(Constants.MSG_FORMAT, request.length() + 5, request);
 
-        return  processBSUnregisterResponse(sendOrReceive(request));
+        return  processBootstrapServerUnregisterResponse(sendAndReceiveUDPMessages(request));
 
     }
 
-    private List<InetSocketAddress> processBSResponse(String response){
+    private List<InetSocketAddress> processBootstrapServerRegisterResponse(String response){
 
         StringTokenizer stringToken = new StringTokenizer(response, " ");
 
-        String length = stringToken.nextToken();
+        stringToken.nextToken();
 
         String status = stringToken.nextToken();
 
         if (!Constants.REGOK.equals(status)) {
             throw new IllegalStateException(Constants.REGOK + " not received");
         }
+        logger.info("Successful - Registered to the network");
 
         int nodesCount = Integer.parseInt(stringToken.nextToken());
 
@@ -65,12 +75,12 @@ public class BSClient {
 
         switch (nodesCount) {
             case 0:
-                LOG.fine("Successful - No other nodes in the network");
+                logger.info("Successful - No other nodes in the network");
                 gNodes = new ArrayList<>();
                 break;
 
             case 1:
-                LOG.fine("No of nodes found : 1");
+                logger.info("No of nodes found : 1");
 
                 gNodes = new ArrayList<>();
 
@@ -81,7 +91,7 @@ public class BSClient {
                 break;
 
             case 2:
-                LOG.fine("No of nodes found : 2");
+                logger.info("No of nodes found : 2");
 
                 gNodes = new ArrayList<>();
 
@@ -92,16 +102,16 @@ public class BSClient {
                 break;
 
             case 9999:
-                LOG.severe("Failed. There are errors in your command");
+                logger.severe("Failed. There are errors in your command");
                 break;
             case 9998:
-                LOG.severe("Failed, already registered to you, unRegister first");
+                logger.severe("Failed, already registered to you, unRegister first");
                 break;
             case 9997:
-                LOG.severe("Failed, registered to another user, try a different IP and port");
+                logger.severe("Failed, registered to another user, try a different IP and port");
                 break;
             case 9996:
-                LOG.severe("Failed, can’t register. BS full.");
+                logger.severe("Failed, can’t register. BS full.");
                 break;
             default:
                 throw new IllegalStateException("Invalid status code");
@@ -110,11 +120,11 @@ public class BSClient {
         return gNodes;
     }
 
-    private boolean processBSUnregisterResponse(String response){
+    private boolean processBootstrapServerUnregisterResponse(String response){
 
         StringTokenizer stringTokenizer = new StringTokenizer(response, " ");
 
-        String length = stringTokenizer.nextToken();
+        stringTokenizer.nextToken();
         String status = stringTokenizer.nextToken();
 
         if (!Constants.UNROK.equals(status)) {
@@ -125,41 +135,20 @@ public class BSClient {
 
         switch (code) {
             case 0:
-                LOG.fine("Successfully unregistered");
+                logger.info("Successfully unregistered");
                 return true;
 
             case 9999:
-                LOG.severe("Error while un-registering. " +
+                logger.severe("Error while un-registering. " +
                         "IP and port may not be in the registry or command is incorrect");
             default:
                 return false;
         }
     }
 
-    private void readProperties() {
-        Properties bsProperties = new Properties();
-        try {
-            bsProperties.load(getClass().getClassLoader().getResourceAsStream(
-                    Constants.BS_PROPERTIES));
-
-        } catch (IOException e) {
-            LOG.severe("Could not open " + Constants.BS_PROPERTIES);
-            throw new RuntimeException("Could not open " + Constants.BS_PROPERTIES);
-        } catch (NullPointerException e) {
-            LOG.severe("Could not find " + Constants.BS_PROPERTIES);
-            throw new RuntimeException("Could not find " + Constants.BS_PROPERTIES);
-        }
-
-        this.BS_IPAddress = bsProperties.getProperty("bootstrap.ip");
-        this.BS_Port = Integer.parseInt(bsProperties.getProperty("bootstrap.port"));
-
-        bsProperties.getProperty("bootstrap.ip");
-
-    }
-
-    private String sendOrReceive(String request) throws IOException {
+    private String sendAndReceiveUDPMessages(String request) throws IOException {
         DatagramPacket sendingPacket = new DatagramPacket(request.getBytes(),
-                request.length(), InetAddress.getByName(BS_IPAddress), BS_Port);
+                request.length(), InetAddress.getByName(bsIPAddress), bsPort);
 
         datagramSocket.setSoTimeout(Constants.TIMEOUT_REG);
 
